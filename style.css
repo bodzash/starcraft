@@ -1,0 +1,20 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+canvas {
+    background-color: white;
+    background-size: 32px 32px;
+    background-image:
+        linear-gradient(to right, gray 1px, transparent 1px),
+        linear-gradient(to bottom, gray 1px, transparent 1px);
+}
