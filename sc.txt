@@ -1,0 +1,101 @@
+Name rule: Every Word In A Name Is Capital Like This
+Display grid: 4x3(12) so max units, max buildings, max upgrades that can be displayed
+
+Factions:
+Solar Federation (Templin Institute Blue, Steel) Terran-like, Metallic Sharp Angles
+-(Humans) [Elite Army] {Mechanical} <Vehicle Heavy> +Few Numbers, Expensive, Healthy, High Dmg+
+-Infantry, Walkers, Tanks, Battle Suits, Jets =Kinetics, Explosives=
+-Deathball Tactics
+
+Commonwealth (Light Greenish? Whiteish? Greyish?) Combine-like, Synthetic Smooth Edges
+-(Aliens) [Mid Army] {Biomech, Implants} <Air Heavy> +Mid Numbers for everything+
+-Infantry, Drones, Heavy Infantry, Attack Vehicles, Gunships =Lasers, Energy=
+-Skirmrish/Irregular/Harass Tactics
+
+Kraken Hive (Tyranids Red? & Purple?) Zerg-like
+-(Bugs) [Horde Army] {Biological} <Infantry Heavy>
+-Bugs, Big Bugs, Flying Bugs =Claws, Bioweapons=
+-Horde/aka Deathball Tactics
+
+Tech Tree (requirements to build):
+HeadQuarters: -
+Generator: -
+Resource: Generator
+Barracks: Resource
+Vehicles: Resource + Barracks
+Aircrafts: Resource + Research
+Research: Barracks + Vehicles
+UpgradeOne: Research + Vehicles or Aircraft
+UpgradeTwo: Research + UpgradeOne
+SuperWeapons: Research + UpgradeOne + UpgradeTwo
+
+Solar Buildings:
+-HeadQua: Battle Command
+-Resourc: Mineral Harvester
+-BaseG-T: Sentry Gun
+-BaseA-A: Enforcer Anti-Air
+-InfDepo: Barrack
+-VhcDepo: Factory
+-AirDepo: Starport
+-Researc: Research Center (Bio Lab default) - Infantry upgrades
+-Upgrad1: Metallurgy Lab - Ground Vehicle upgrades
+-Upgrad2: Science Lab - Other upgrades
+-TechBu1: Offensv - Nuke Silo - [A] shoots a big missile boom
+-TechBu2: Utility - Warp Gate - [A] AOE teleport
+-TechBu3: Utility - Titan Factory - [P] allows <SuperVehicle > unit production
+
+Solar Infantry Units:
+-Guardian Squad 4x
+-Scout Squad 3x - cloaked scout
+-Sharpshooter 1x - anti-inf
+-Commando 1x
+-X-6 Badger - ok anti-everything walker
+-X-3 Wolverine - rocket walker
+
+Solar Vehicle Units:
+-Bison Tank - tank
+-Ibex Tankette - small tank anti-inf
+-Mule APC - unarmed apc - 1 squad
+
+Solar Air Units:
+-Vulture - cloaked anti-meh
+-Flycatcher - anti-air
+
+Solar Upgrades:
+
+
+CW Buildings:
+-HeadQua: Citadel Command
+-Resourc: Mineral Harvester
+-BaseG-T: Auto-Turret
+-BaseA-A: Skysweeper Anti-Air
+-InfDepo: Infantry Command
+-VhcDepo: Mechanized Command
+-AirDepo: Air Command
+-Researc: Technology Station (Implant Dump default) - Infantry and Drone upgrades
+-Upgrad1: Orbital Portal - Air upgrades
+-Upgrad2: Satellite Relay - idk upgrades
+-TechBu1: Offensv - Enhancement Amplifier - [A] makes Infantry and Drone units fire faster
+-TechBu2: Defensv - Shield Projector - [A] AOE invurnerability (for Aircraft)
+-TechBu3: Utility - AI Constructor - [A] Accelerates production of Buildings and Vehicles
+
+CW Infantry Units:
+-Grunt Squad 6x - infantry
+-Overseer Drone 1x - flying scout
+-Cyborg Squad 5x - laser anti-tank & anti-build
+-Bomb Drones 4x - suicide bomber anti-everything
+
+CW Vehicle Units:
+-Butcher Tank - tank
+-Strider - tall walker - long range arty
+
+CW Air Units:
+-Omenbringer - bomber anti-building
+-Harbinger (Dropship) - flying transport 1 squad
+-Cremator - anti-air & anti-inf
+-Hunter - fast anti-vehic
+
+CW Upgrades:
+
+
+Trinity of Balance : speed strength tankiness (= cost)
