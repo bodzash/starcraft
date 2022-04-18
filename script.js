@@ -24,6 +24,9 @@ class Unit {
 
         // Selection Check
         if (mouse !== null) {
+            let ap = pointDirection(this.x, this.y, mouseX, mouseY)
+            this.dir = ap
+            this.spd = 4
             let x1 = Math.min(mouse.x, mouseX)
             let y1 = Math.min(mouse.y, mouseY)
             let x2 = Math.max(mouse.x, mouseX)
@@ -34,16 +37,18 @@ class Unit {
             } else {
                 this.selected = false
             }
+        } else {
+            this.spd =  0
         }
 
         // Collision With Other Unit
         unitArray.forEach(item=> {
             if (this.id !== item.id) {
                 //let other = item.id
-                if (checkCollInst(item, this)) {
-                    let ang = anglePoint(item.x, item.y, this.x, this.y) +180
-                    this.x += (this.spd+1)*Math.cos(3.14/180*ang)
-                    this.y -= (this.spd+1)*Math.sin(3.14/180*ang)
+                if (checkCollInst(item, this) && this.spd === 0) {
+                    let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
+                    this.x += 3 * Math.cos(3.14 / 180 * ang)
+                    this.y -= 3 * Math.sin(3.14 / 180 * ang)
                 }
             }
         })
@@ -89,12 +94,20 @@ let mouseY = 0
 let mouse = null
 let selectedUnits = []
 
-unitArray.push(new Unit(300, 200, 32, 180))
-unitArray.push(new Unit(300, 216, 32, 180))
-unitArray.push(new Unit(364, 200, 32, 180))
-unitArray.push(new Unit(364, 216, 32, 180))
+unitArray.push(new Unit(432, 200, 32, 0))
+unitArray.push(new Unit(432, 232, 32, 180))
+unitArray.push(new Unit(465, 200, 32, 180))
+unitArray.push(new Unit(465, 232, 32, 180))
 
-unitArray.push(new Unit(100, 200, 32, 0))
+unitArray.push(new Unit(501, 200, 32, 180))
+unitArray.push(new Unit(501, 232, 32, 180))
+unitArray.push(new Unit(534, 200, 32, 180))
+unitArray.push(new Unit(534, 232, 32, 180))
+
+unitArray.push(new Unit(100, 200, 16, 0))
+unitArray.push(new Unit(100, 232, 16, 0))
+unitArray.push(new Unit(164, 200, 16, 0))
+unitArray.push(new Unit(164, 232, 16, 0))
 
 // Loop the game
 function update() {
@@ -118,13 +131,9 @@ function checkCollInst(obj1, obj2) { //check collision between 2 instances
     {return true} else {return false}
 }
 
-function anglePoint(x1, y1, x2, y2) { //
-    let rad = Math.atan2(y2 - y1, x2 - x1)
-    return radToDeg(rad)
-}
-
-function radToDeg(rad) { //turns radians to degree
-    return rad * 180 / Math.PI
+function pointDirection(x1, y1, x2, y2) { //
+    let rad = Math.atan2(y1 - y2, x1 - x2) * ( 180 / 3.14 )
+    return Math.abs(rad - 180)
 }
 
 //Move Unit towards an angle
