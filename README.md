@@ -1,0 +1,2 @@
+# starcraft
+JavaScript practice project
