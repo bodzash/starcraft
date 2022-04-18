@@ -1,24 +1,54 @@
 const canvas = document.querySelector("canvas")
 const ctx = canvas.getContext("2d")
-//console.log(ctx)
 
 canvas.width = innerWidth //640
 canvas.height = innerHeight //480
 
+// ########### Classes ###########
+
 class Unit {
-    constructor(x, y, w, unit) {
+    constructor(x, y, w, dir) {
         idCount++
         this.id = idCount
         this.x = x
         this.y = y
         this.w = w
-        this.unitName = unit
         this.selected = false
+        this.dir = dir
+        this.spd = 4
     }
     step() {
-        //this.x += 1
+        //Move towards dir
+        this.x += this.spd*Math.cos(3.14/180*this.dir)
+        this.y -= this.spd*Math.sin(3.14/180*this.dir)
 
-        this.draw() // <-
+        // Selection Check
+        if (mouse !== null) {
+            let x1 = Math.min(mouse.x, mouseX)
+            let y1 = Math.min(mouse.y, mouseY)
+            let x2 = Math.max(mouse.x, mouseX)
+            let y2 = Math.max(mouse.y, mouseY)
+            if (x2 >= this.x - this.w/2 && x1 <= this.x + this.w/2 &&
+                y2 >= this.y - this.w/2 && y1 <= this.y + this.w/2) {
+                    this.selected = true
+            } else {
+                this.selected = false
+            }
+        }
+
+        // Collision With Other Unit
+        unitArray.forEach(item=> {
+            if (this.id !== item.id) {
+                //let other = item.id
+                if (checkCollInst(item, this)) {
+                    let ang = anglePoint(item.x, item.y, this.x, this.y) +180
+                    this.x += (this.spd+1)*Math.cos(3.14/180*ang)
+                    this.y -= (this.spd+1)*Math.sin(3.14/180*ang)
+                }
+            }
+        })
+
+        this.draw() //Draw
     }
     draw() {
         this.selected ? ctx.fillStyle = "green" : ctx.fillStyle = "red"
@@ -32,17 +62,18 @@ class MouseCommander {
         this.y = y
     }
     step() {
-
-        this.draw()
+        this.draw() // Call Draw
     }
     draw() {
         ctx.beginPath()
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1
         ctx.strokeStyle = "green"
         ctx.rect(this.x, this.y, mouseX-this.x, mouseY-this.y)
         ctx.stroke()
     }
 }
+
+// ########### Game variables ###########
 
 // Instance holders
 let idCount = 0
@@ -54,47 +85,53 @@ let wallArray = []
 let mouseX = 0
 let mouseY = 0
 
-let player = new Unit(200, 200, 32, "default")
+// Global Instances
 let mouse = null
-unitArray.push(player)
+let selectedUnits = []
 
+unitArray.push(new Unit(300, 200, 32, 180))
+unitArray.push(new Unit(300, 216, 32, 180))
+unitArray.push(new Unit(364, 200, 32, 180))
+unitArray.push(new Unit(364, 216, 32, 180))
 
+unitArray.push(new Unit(100, 200, 32, 0))
+
+// Loop the game
 function update() {
     requestAnimationFrame(update)
     ctx.clearRect(0, 0, canvas.width, canvas.height) //cls
-
-    if (mouse !== null) {
-        let x1 = Math.min(mouse.x, mouseX);
-        let y1 = Math.min(mouse.y, mouseY);
-        let x2 = Math.max(mouse.x, mouseX);
-        let y2 = Math.max(mouse.y, mouseY);
-        if (
-            x2 >= player.x - player.w/2 &&
-            x1 <= player.x + player.w/2 &&
-            y2 >= player.y - player.w/2 &&
-            y1 <= player.y + player.w/2
-            ) {
-            unitArray[0].selected = true
-        } else {
-            unitArray[0].selected = false
-        }
-    }
-
+    
     unitArray.forEach(item=> item.step())
     mouse !== null && mouse.step()
 }
 update()
 
 
-// Functions
-function checkCollInst() {} 
+// ########### Functions ###########
+function checkCollInst(obj1, obj2) { //check collision between 2 instances
+    if (
+        obj1.x + obj1.w/2 >= obj2.x - obj2.w/2 &&
+        obj1.x - obj1.w/2 <= obj2.x + obj2.w/2 &&
+        obj1.y + obj1.w/2 >= obj2.y - obj2.w/2 &&
+        obj1.y - obj1.w/2 <= obj2.y + obj2.w/2
+        )
+    {return true} else {return false}
+}
 
-function checkCollPos() {
+function anglePoint(x1, y1, x2, y2) { //
+    let rad = Math.atan2(y2 - y1, x2 - x1)
+    return radToDeg(rad)
+}
 
+function radToDeg(rad) { //turns radians to degree
+    return rad * 180 / Math.PI
 }
 
 //Move Unit towards an angle
-function moveDirection(angle) {}
+function motionAdd(dir, spd) {
+    hspeed += spd*cos(pi/180*dir)
+    vspeed -= spd*sin(pi/180*dir)
+}
 
 // Evenet Listeners
 canvas.onmousemove = (e)=> {
