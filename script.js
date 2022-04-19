@@ -13,29 +13,45 @@ class Unit {
         this.x = x
         this.y = y
         this.w = w
-        this.selected = false
+        this.isSelected = false
         this.dir = dir
-        this.spd = 4
+        this.spd = 0
+        this.state = "idle" //idle-move-attack-attackmove-channel
+        this.waypoints = []
+        this.dest = {x: null, y: null} //move
+        this.target = null //id number maybe?
+
+        this.unitName = "Default"
+        this.unitSize = 32 //px
+        this.unitModel = ""
+        this.unitHealth = 100
+        this.unitSpeed = 4
+        this.unitArmor = 1 //1-2-3 L-M-H (0-None)
+        this.unitPen = {L: 1, M: 1, H: 1} //1-5 (1-worst 5-best)
     }
     step() {
         //Move towards dir
         this.x += this.spd*Math.cos(3.14/180*this.dir)
         this.y -= this.spd*Math.sin(3.14/180*this.dir)
 
+        //Snap to grid (for pathfind)
+        //Math.floor(mouseX/32)*32
+        //Math.floor(mouseY/32)*32 
+
         // Selection Check
         if (mouse !== null) {
             let ap = pointDirection(this.x, this.y, mouseX, mouseY)
             this.dir = ap
-            this.spd = 4
+            this.spd = this.unitSpeed
             let x1 = Math.min(mouse.x, mouseX)
             let y1 = Math.min(mouse.y, mouseY)
             let x2 = Math.max(mouse.x, mouseX)
             let y2 = Math.max(mouse.y, mouseY)
             if (x2 >= this.x - this.w/2 && x1 <= this.x + this.w/2 &&
                 y2 >= this.y - this.w/2 && y1 <= this.y + this.w/2) {
-                    this.selected = true
+                    this.isSelected = true
             } else {
-                this.selected = false
+                this.isSelected = false
             }
         } else {
             this.spd =  0
@@ -89,10 +105,18 @@ let wallArray = []
 // Constant variables
 let mouseX = 0
 let mouseY = 0
+let mousePressed = false
+let mouseReleased = false
+let mouseHold = false
 
 // Global Instances
 let mouse = null
 let selectedUnits = []
+
+// Pathfinder
+// https://github.com/qiao/PathFinding.js/
+// Best First - chebyshev - allowdiag - nobordercross
+// A* - Shrugstiny
 
 unitArray.push(new Unit(432, 200, 32, 0))
 unitArray.push(new Unit(432, 232, 32, 180))
