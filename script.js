@@ -1,10 +1,21 @@
 const canvas = document.querySelector("canvas")
-const ctx = canvas.getContext("2d")
+const ctx = canvas.getContext("2d") //webgl / webgl2
 
 canvas.width = innerWidth //640
 canvas.height = innerHeight //480
 
-// ########### Classes ###########
+// ######################################### Classes #########################################
+class Wall {
+    constructor(x, y, w) {
+        this.x = x
+        this.y = y
+        this.w = w
+    }
+    draw() {
+        ctx.fillStyle = "black"
+        ctx.fillRect(this.x-this.w/2, this.y-this.w/2, this.w, this.w)
+    }
+}
 
 class Unit {
     constructor(x, y, w, dir) {
@@ -56,6 +67,7 @@ class Unit {
 
         // Mouse Left Released Event
         if (mouseLeftReleased) {
+            // Add to selected array
             if (insideMouseCmdr(this)) {
                 this.isSelected = true
                 selectedUnits.push(this)
@@ -66,9 +78,8 @@ class Unit {
         }
 
         // Collision With Other Unit
-        unitArray.forEach(item=> {
+        unitArray.forEach(item=> { //other = item.id
             if (this.id !== item.id) {
-                //let other = item.id
                 if (checkCollInst(item, this) && this.spd === 0 && item.spd === 0) {
                     let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
                     this.x += 2 * Math.cos(3.14 / 180 * ang)
@@ -104,58 +115,7 @@ class MouseCommander {
     }
 }
 
-// ########### Game variables ###########
-
-// Instance holders
-let idCount = 0
-let unitArray = []
-let buildArray = []
-let wallArray = []
-
-// Constant variables
-let mouseX = 0
-let mouseY = 0
-let mouseLeftPressed = false
-let mouseLeftReleased = false
-let mouseLeftHold = false
-
-// Global Instances
-let mouseCmdr = null
-let selectedUnits = []
-
-// Pathfinder
-// https://github.com/qiao/PathFinding.js/
-// Best First - chebyshev - allowdiag - nobordercross
-// A* - Shrugstiny
-
-unitArray.push(new Unit(432, 200, 32, 0))
-unitArray.push(new Unit(432, 232, 32, 180))
-unitArray.push(new Unit(465, 200, 32, 180))
-unitArray.push(new Unit(465, 232, 32, 180))
-
-unitArray.push(new Unit(501, 200, 32, 180))
-unitArray.push(new Unit(501, 232, 32, 180))
-unitArray.push(new Unit(534, 200, 32, 180))
-unitArray.push(new Unit(534, 232, 32, 180))
-
-unitArray.push(new Unit(100, 200, 16, 0))
-unitArray.push(new Unit(100, 232, 16, 0))
-unitArray.push(new Unit(164, 200, 16, 0))
-unitArray.push(new Unit(164, 232, 16, 0))
-
-// ########### GAME LOOP ###########
-function update() {
-    requestAnimationFrame(update)
-    ctx.clearRect(0, 0, canvas.width, canvas.height) //cls
-
-    unitArray.forEach(item=> item.step())
-    mouseCmdr !== null && mouseCmdr.step()
-}
-update()
-
-
-// ########### Functions ###########
-
+// ####################################### Functions #######################################
 // Checks collision between 2 instances
 function checkCollInst(obj1, obj2) {
     if (
@@ -207,8 +167,57 @@ function insideMouseCmdr(obj) {
     }
 }
 
+// ##################################### Game variables #####################################
+// Instance holders
+let idCount = 0
+let unitArray = []
+let buildArray = []
+let wallArray = []
 
-// ########### Evenet Listeners ###########
+// Constant variables
+let mouseX = 0
+let mouseY = 0
+let mouseLeftPressed = false
+let mouseLeftReleased = false
+let mouseLeftHold = false
+
+// Global Instances
+let mouseCmdr = null
+let selectedUnits = []
+
+// Pathfinder
+// https://github.com/qiao/PathFinding.js/
+// Best First Search - chebyshev - allowdiag - nobordercross
+
+// Load map here (Map matrix)
+
+unitArray.push(new Unit(432, 200, 32, 0))
+unitArray.push(new Unit(432, 232, 32, 180))
+unitArray.push(new Unit(465, 200, 32, 180))
+unitArray.push(new Unit(465, 232, 32, 180))
+
+unitArray.push(new Unit(501, 200, 32, 180))
+unitArray.push(new Unit(501, 232, 32, 180))
+unitArray.push(new Unit(534, 200, 32, 180))
+unitArray.push(new Unit(534, 232, 32, 180))
+
+unitArray.push(new Unit(100, 200, 16, 0))
+unitArray.push(new Unit(100, 232, 16, 0))
+unitArray.push(new Unit(164, 200, 16, 0))
+unitArray.push(new Unit(164, 232, 16, 0))
+
+// ######################################### GAME LOOP ########################################
+function update() {
+    requestAnimationFrame(update)
+    ctx.clearRect(0, 0, canvas.width, canvas.height) //cls
+
+    unitArray.forEach(item=> item.step())
+    //wallArray.forEach(item=> item.step())
+    //buildArray.forEach(item=> item.step())
+    mouseCmdr !== null && mouseCmdr.step()
+} update()
+
+// ##################################### Evenet Listeners #####################################
 onmousemove = ({ clientX, clientY })=> {
     mouseX = clientX
     mouseY = clientY
@@ -216,8 +225,8 @@ onmousemove = ({ clientX, clientY })=> {
 onmousedown = (e)=> { // 0-left 2-right
     mouseLeftPressed = true
     mouseLeftHold = true
-    requestAnimationFrame(()=> {mouseLeftPressed=false}) // skip 1 frame
     mouseCmdr = new MouseCommander(e.clientX,e.clientY)
+    requestAnimationFrame(()=> {mouseLeftPressed=false})
 }
 onmouseup = (e)=> { // 0-left 2-right
     mouseLeftReleased = true
@@ -234,3 +243,5 @@ onkeydown = ({ key })=> { //e.code or e.key
         item.dest = {x: Math.floor(mouseX/32)*32+16, y: Math.floor(mouseY/32)*32+16}
     })
 }
+
+// #########################################################################################
