@@ -1,2 +1,2 @@
-# starcraft
+# "starcraft"
 JavaScript practice project
