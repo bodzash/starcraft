@@ -156,6 +156,15 @@ function snapToGrid(coor) {
     return Math.floor(coor/gridW)*gridW +(gridW/2)
 }
 
+// Finds a path, returns array of objects(x & y) waypoints
+function findPath(strt, end) {
+}
+
+// 
+function constructMap(matrix) {
+
+}
+
 // Checks if instance inside mouseCmdr selection
 function insideMouseCmdr(obj) {
 
@@ -206,6 +215,12 @@ let selectedUnits = []
 // Best First Search - chebyshev - allowdiag - nobordercross
 
 // Load maps here (Map matrix)
+let currentMap = new Graph([
+	[1, 0, 0, 0],
+	[1, 1, 0, 0],
+	[0, 1, 0, 0],
+    [1, 1, 0, 0],
+])
 
 unitArray.push(new Unit(6*32-16, 3*32-16, 24, 0))
 unitArray.push(new Unit(432, 232, 24, 180))
@@ -257,7 +272,7 @@ onkeydown = ({ key })=> { //e.code or e.key
     //console.log(selectedUnits)
     if (key == " ") {
         selectedUnits.forEach(item=> {
-            //item.waypoints = []
+            item.waypoints = []
             item.waypoints.push({x: snapToGrid(mouseX), y: snapToGrid(mouseY)})
         })
     }
@@ -274,9 +289,54 @@ onkeydown = ({ key })=> { //e.code or e.key
         selectedUnits.forEach(item=> {
             item.waypoints = []
             item.spd = 0
-            item.waypoints.push({x: snapToGrid(mouseX), y: snapToGrid(mouseY)})
+            let path = astar.search(currentMap, currentMap.grid[0][0], currentMap.grid[3][0])
+            let parsedPath = path.map(item=> {
+                return {x: (item.x+1)*32-16, y: (item.y+1)*32-16}
+            })
+            //console.log(parsedPath)
+            console.log(currentMap.grid[3][0])
+            item.waypoints = parsedPath
+            
         })
     }
 }
 
 // #########################################################################################
+
+/*
+Fast A* pathfinding
+
+// Load a map in as a matrix aka 2d array
+let currentMap = new Graph([
+	[1,1,1,1],
+	[0,1,1,0],
+	[0,0,1,1]
+])
+
+// Can change map
+currentMap[y][x]
+currentMap[9][6] = 1 // <- becomes a wall
+currentMap[9][6] = 0 // <- becomes walkable
+
+let start = graph.grid[0][0] // <- start coors
+let end = graph.grid[1][2]  // <- goal coors
+let path = astar.search(graph, start, end) // <- returns an array of waypoints
+*/
+
+/*
+PROBLEM
+
+One of the challenges I faced was cutting the path short if it was blocked.
+So say you click to the other side on an impassable wall.
+A* will return a null path after exhausting the open list because
+there's no valid path across the wall.
+But I want a piece of the path that lets my character move up to the wall.
+
+SOLUTION
+
+When you exhaust your lists,
+you'll find a point that has a lowest possible H value that's non-zero.
+That point is, according to the heuristic,
+the closest point to the target that isn't the target itself.
+You can just return that point, as it'll be "good enough".
+*/
