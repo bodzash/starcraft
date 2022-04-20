@@ -5,18 +5,6 @@ canvas.width = innerWidth //640
 canvas.height = innerHeight //480
 
 // ######################################### Classes #########################################
-class Wall {
-    constructor(x, y, w) {
-        this.x = x
-        this.y = y
-        this.w = w
-    }
-    draw() {
-        ctx.fillStyle = "black"
-        ctx.fillRect(this.x-this.w/2, this.y-this.w/2, this.w, this.w)
-    }
-}
-
 class Unit {
     constructor(x, y, w, dir) {
         idCount++
@@ -25,17 +13,23 @@ class Unit {
         this.y = y
         this.w = w
         this.isSelected = false
+        this.isHovered = false
+        this.renderModel = "defaultIdle"
         this.dir = dir
         this.spd = 0
-        this.state = "idle" //idle-move-attack-attackmove-channel
-        this.waypoints = []
-        this.dest = null // {x: 1, y: 2,}
+        this.state = "idle" //idle-move-attack-attackmove-chase-cast
+        this.waypoints = [] //{x: 1, y: 2}, {x: 4, y: 8}
         this.target = null //id number maybe?
+        this.canShoot = true
+        //this.initUnit()
 
         this.unitName = "Default"
         this.unitSize = 32 //px
-        this.unitModel = ""
+        this.unitModel = {idle: "defaultIdle", attack: "defaultAttack"} //obj
         this.unitHealth = 50
+        this.unitDamage =  10
+        this.unitAtkRange = 5 // times gridW
+        this.unitAtkSpd = 30 //in frames
         this.unitSpeed = 4
         this.unitArmor = 1 //1-2-3 L-M-H (0-None)
         this.unitPen = {L: 1, M: 1, H: 1} //1-5 (1-worst 5-best)
@@ -45,25 +39,31 @@ class Unit {
         this.x += this.spd*Math.cos(3.14/180*this.dir)
         this.y -= this.spd*Math.sin(3.14/180*this.dir)
 
-        // State Controller break it up :)
+        // State Controller
+        // function fetchUnitState({obj, }) {} //destructure
         /*switch(state) {
             case "idle":
             break
         }*/
 
-        // Move to point
-        if (this.dest !== null) {
-            if (pointDistance(this.x, this.y, this.dest.x, this.dest.y) >= this.unitSpeed) {
-                this.dir = pointDirection(this.x, this.y, this.dest.x, this.dest.y)
+        // Move to waypoints
+        if (this.waypoints.length != 0) {
+            let subpoint = this.waypoints[0]
+            if (pointDistance(this.x, this.y, subpoint.x, subpoint.y) >= this.unitSpeed) {
+                this.dir = pointDirection(this.x, this.y, subpoint.x, subpoint.y)
                 this.spd = this.unitSpeed
             } else {
-                this.x = this.dest.x
-                this.y = this.dest.y
-                this.dest = null
-                this.state = "idle"
-                this.spd = 0
+                this.x = subpoint.x
+                this.y = subpoint.y
+                this.waypoints.shift()
+                if (this.waypoints.length == 0) { this.spd = 0 } //if last stop
             }
         }
+
+        // Mouse Left Pressed Event
+        if (mouseLeftPressed) {
+            this.isSelected = false
+        } 
 
         // Mouse Left Released Event
         if (mouseLeftReleased) {
@@ -74,8 +74,10 @@ class Unit {
             } else {
                 this.isSelected = false
             }
-            
         }
+
+        // MouseCmdr hover over
+        this.isHovered = insideMouseCmdr(this) ? true : false
 
         // Collision With Other Unit
         unitArray.forEach(item=> { //other = item.id
@@ -89,12 +91,15 @@ class Unit {
         })
 
         // Draw
-        this.draw()
+        this.draw2D()
+        //this.draw3D()
     }
-    draw() {
+    draw2D() {
         this.isSelected ? ctx.fillStyle = "green" : ctx.fillStyle = "red"
+        if(this.isHovered) ctx.fillStyle = "DarkOrange"
         ctx.fillRect(this.x-this.w/2, this.y-this.w/2, this.w, this.w)
     }
+    //initUnit() {  }
 }
 
 class MouseCommander {
@@ -146,6 +151,11 @@ function motionAdd(dir, spd) {
     vspeed -= spd*sin(pi/180*dir)
 }
 
+// Return the Grid that the coor is inside of it
+function snapToGrid(coor) {
+    return Math.floor(coor/gridW)*gridW +(gridW/2)
+}
+
 // Checks if instance inside mouseCmdr selection
 function insideMouseCmdr(obj) {
 
@@ -177,11 +187,17 @@ let wallArray = []
 // Constant variables
 let mouseX = 0
 let mouseY = 0
+
 let mouseLeftPressed = false
 let mouseLeftReleased = false
 let mouseLeftHold = false
 
-// Global Instances
+let mouseRightPressed = false
+let mouseRightReleased = false
+let mouseRightHold = false
+
+// Global variables
+const gridW = 32
 let mouseCmdr = null
 let selectedUnits = []
 
@@ -189,12 +205,12 @@ let selectedUnits = []
 // https://github.com/qiao/PathFinding.js/
 // Best First Search - chebyshev - allowdiag - nobordercross
 
-// Load map here (Map matrix)
+// Load maps here (Map matrix)
 
-unitArray.push(new Unit(432, 200, 32, 0))
-unitArray.push(new Unit(432, 232, 32, 180))
-unitArray.push(new Unit(465, 200, 32, 180))
-unitArray.push(new Unit(465, 232, 32, 180))
+unitArray.push(new Unit(6*32-16, 3*32-16, 24, 0))
+unitArray.push(new Unit(432, 232, 24, 180))
+unitArray.push(new Unit(465, 200, 24, 180))
+unitArray.push(new Unit(465, 232, 24, 180))
 
 unitArray.push(new Unit(501, 200, 32, 180))
 unitArray.push(new Unit(501, 232, 32, 180))
@@ -239,9 +255,28 @@ onmouseup = (e)=> { // 0-left 2-right
 
 onkeydown = ({ key })=> { //e.code or e.key
     //console.log(selectedUnits)
-    selectedUnits.forEach(item=> {
-        item.dest = {x: Math.floor(mouseX/32)*32+16, y: Math.floor(mouseY/32)*32+16}
-    })
+    if (key == " ") {
+        selectedUnits.forEach(item=> {
+            //item.waypoints = []
+            item.waypoints.push({x: snapToGrid(mouseX), y: snapToGrid(mouseY)})
+        })
+    }
+    // Stop all selected units
+    if (key == "s") {
+        selectedUnits.forEach(item=> {
+            item.waypoints = []
+            item.spd = 0
+        })
+    }
+
+    // Attack Move (no mouse input needed)
+    if (key == "a") {
+        selectedUnits.forEach(item=> {
+            item.waypoints = []
+            item.spd = 0
+            item.waypoints.push({x: snapToGrid(mouseX), y: snapToGrid(mouseY)})
+        })
+    }
 }
 
 // #########################################################################################

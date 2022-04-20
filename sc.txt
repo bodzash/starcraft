@@ -99,3 +99,13 @@ CW Upgrades:
 
 
 Trinity of Balance : speed strength tankiness (= cost)
+
+Type Amplifiyer - ignore armor
+-Effective against Aircraft
+
+Armor Modifier
+-Horrible against Light Armor / D - 1 - Red
+-Bad against Med Armor / C - 2 - Orange
+-Ok against Heavy Armor / B - 3 - Yellow
+-Good against Light Armor / A - 4 - Green
+-Excellent against Heavy Armor / S+ - 5 -Blue
