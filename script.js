@@ -28,14 +28,16 @@ class Unit {
         this.isSelected = false
         this.isHovered = false
         this.renderModel = "defaultIdle"
+        this.health = 50
         this.dir = dir
         this.spd = 0
         this.state = "idle" //idle-move-attack-attackmove-chase-cast
         this.waypoints = [] //{x: 1, y: 2}, {x: 4, y: 8}
         this.target = null //id number maybe?
         this.canShoot = true
-        //this.initUnit()
+        this.collisions = 60
 
+        //this.initUnit()
         this.unitName = "Default"
         this.unitSize = 32 //px
         this.unitModel = {idle: "defaultIdle", attack: "defaultAttack"} //obj
@@ -94,22 +96,25 @@ class Unit {
 
         // Collision With Other Unit
         if ( this.spd === 0 ) {
-            unitArray.forEach(item=> { //other = item.id
-                if (this.id !== item.id) {
-                    if (checkCollInst(item, this) && item.spd === 0 ) {
-                        let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
-                        this.x += 2 * Math.cos(3.14 / 180 * ang)
-                        this.y -= 2 * Math.sin(3.14 / 180 * ang)
+
+            if (this.collisions > 0) {
+                unitArray.forEach(item=> { //other = item.id
+                    if (this.id !== item.id) {
+                        if (checkCollInst(item, this) && item.spd === 0) {
+                            let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
+                            this.x += 2 * Math.cos(3.14 / 180 * ang)
+                            this.y -= 2 * Math.sin(3.14 / 180 * ang)
+                            this.collisions--
+                        }
                     }
-                }
-            })
+                })
+            }
             // Collision With Walls
             wallArray.forEach(item=> { //other = item.id
                 if (checkCollInst(item, this)) {
                     let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
-                    this.x += 4 * Math.cos(3.14 / 180 * ang)
-                    this.y -= 4 * Math.sin(3.14 / 180 * ang)
-                    console.log("xd")
+                    this.x += this.unitSpeed*3 * Math.cos(3.14 / 180 * ang)
+                    this.y -= this.unitSpeed*3 * Math.sin(3.14 / 180 * ang)
                 }
             })
         }
@@ -264,10 +269,10 @@ unitArray.push(new Unit(432, 232, 24, 180))
 unitArray.push(new Unit(465, 200, 24, 180))
 unitArray.push(new Unit(465, 232, 24, 180))
 
-unitArray.push(new Unit(501, 200, 32, 180))
-unitArray.push(new Unit(501, 232, 32, 180))
-unitArray.push(new Unit(534, 200, 32, 180))
-unitArray.push(new Unit(534, 232, 32, 180))
+unitArray.push(new Unit(501, 200, 16, 180))
+unitArray.push(new Unit(501, 232, 16, 180))
+unitArray.push(new Unit(534, 200, 16, 180))
+unitArray.push(new Unit(534, 232, 16, 180))
 
 unitArray.push(new Unit(100, 200, 16, 0))
 unitArray.push(new Unit(100, 232, 16, 0))
@@ -329,6 +334,7 @@ onkeydown = ({ key })=> { //e.code or e.key
     if (key == "a") {
         selectedUnits.forEach(item=> {
             item.waypoints = []
+            item.collisions = 30
             item.spd = 0
             //item.waypoints = findPath({x: 0, y: 0}, {x: 0, y:10})
             item.waypoints = findPath(
@@ -336,6 +342,13 @@ onkeydown = ({ key })=> { //e.code or e.key
                     {x: getGridCoor(mouseX), y: getGridCoor(mouseY)}
             )
         })
+    }
+
+    if (key == "f") {
+        let x = getGridCoor(mouseX)
+        let y = getGridCoor(mouseY)
+        wallArray.push(new Wall(x,y))
+        currentMap.grid[y][x].weight = 0
     }
 }
 
