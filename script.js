@@ -10,6 +10,7 @@ class Wall {
     constructor(x, y) {
         this.x = (x+1)*32-16
         this.y = (y+1)*32-16
+        this.w = gridW
     }
     draw() {
         ctx.fillStyle = "black"
@@ -92,15 +93,26 @@ class Unit {
         this.isHovered = insideMouseCmdr(this) ? true : false
 
         // Collision With Other Unit
-        unitArray.forEach(item=> { //other = item.id
-            if (this.id !== item.id) {
-                if (checkCollInst(item, this) && this.spd === 0 && item.spd === 0) {
-                    let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
-                    this.x += 2 * Math.cos(3.14 / 180 * ang)
-                    this.y -= 2 * Math.sin(3.14 / 180 * ang)
+        if ( this.spd === 0 ) {
+            unitArray.forEach(item=> { //other = item.id
+                if (this.id !== item.id) {
+                    if (checkCollInst(item, this) && item.spd === 0 ) {
+                        let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
+                        this.x += 2 * Math.cos(3.14 / 180 * ang)
+                        this.y -= 2 * Math.sin(3.14 / 180 * ang)
+                    }
                 }
-            }
-        })
+            })
+            // Collision With Walls
+            wallArray.forEach(item=> { //other = item.id
+                if (checkCollInst(item, this)) {
+                    let ang = pointDirection(this.x, this.y, item.x, item.y) - 180
+                    this.x += 4 * Math.cos(3.14 / 180 * ang)
+                    this.y -= 4 * Math.sin(3.14 / 180 * ang)
+                    console.log("xd")
+                }
+            })
+        }
 
         // Draw
         this.draw2D()
@@ -194,7 +206,7 @@ function createMap(w, h) {
         }
         matrix.push(subArray)
     }
-    return new Graph(matrix)
+    return new Graph(matrix, {diagonal: true}) // false
 }
 
 // When loading a map in call this and it will spawn walls
@@ -243,8 +255,9 @@ const gridW = 32
 let mouseCmdr = null
 let selectedUnits = []
 
-// Load maps here (Map matrix)
+// Load maps here (Map matrix) and run wallconstructor
 let currentMap = createMap(30, 30)
+constructWalls(currentMap)
 
 unitArray.push(new Unit(6*32-16, 3*32-16, 24, 0))
 unitArray.push(new Unit(432, 232, 24, 180))
@@ -262,6 +275,7 @@ unitArray.push(new Unit(164, 200, 16, 0))
 unitArray.push(new Unit(164, 232, 16, 0))
 
 wallArray.push(new Wall(2,2))
+currentMap.grid[2][2].weight = 0
 
 // ######################################### GAME LOOP ########################################
 function update() {
@@ -339,7 +353,7 @@ let currentMap = new Graph([
 
 // Can change map
 currentMap[y][x]
-currentMap[9][6] = 1 // <- becomes a wall
+currentMap[9][6].weght = 1 // <- becomes a wall
 currentMap[9][6] = 0 // <- becomes walkable
 
 let start = graph.grid[0][0] // <- start coors
