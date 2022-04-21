@@ -5,6 +5,18 @@ canvas.width = innerWidth //640
 canvas.height = innerHeight //480
 
 // ######################################### Classes #########################################
+class Wall {
+    // These Coors are grid coors not game coors
+    constructor(x, y) {
+        this.x = (x+1)*32-16
+        this.y = (y+1)*32-16
+    }
+    draw() {
+        ctx.fillStyle = "black"
+        ctx.fillRect(this.x-16, this.y-16, 32, 32)
+    }
+}
+
 class Unit {
     constructor(x, y, w, dir) {
         idCount++
@@ -156,25 +168,46 @@ function snapToGrid(coor) {
     return Math.floor(coor/gridW)*gridW +(gridW/2)
 }
 
-// Finds a path, returns array of objects(x & y) waypoints
-function findPath(strt, end) {
+function getGridCoor(coor) {
+    return (snapToGrid(coor)-gridW/2) / gridW
 }
 
-// 
-function constructMap(matrix) {
+// Finds a path, returns array of objects(x & y) waypoints takes in {x: ,y: } , {x: , y:}
+function findPath(strt, end) {
+    let path =
+    astar.search(currentMap, currentMap.grid[strt.y][strt.x], currentMap.grid[end.y][end.x])
+    let parsedPath = path.map(item=> {
+        return {x: (item.y+1)*gridW -(gridW/2), y: (item.x+1)*gridW -(gridW/2)}
+    })
+    return parsedPath
+}
 
+// Creates a fully walkable map using width height (in grid coors)
+function createMap(w, h) {
+    let matrix = []
+    // Height / Y
+    for(let i = 0; i <= h; i++) {
+        let subArray = []
+        // Width / X
+        for(let j = 0; j <= w; j++) {
+            subArray.push(1)
+        }
+        matrix.push(subArray)
+    }
+    return new Graph(matrix)
+}
+
+// When loading a map in call this and it will spawn walls
+function constructWalls(graph) {
 }
 
 // Checks if instance inside mouseCmdr selection
 function insideMouseCmdr(obj) {
-
     if (mouseCmdr === null) {return false}
-
     let x1 = Math.min(mouseCmdr.x, mouseX)
     let y1 = Math.min(mouseCmdr.y, mouseY)
     let x2 = Math.max(mouseCmdr.x, mouseX)
     let y2 = Math.max(mouseCmdr.y, mouseY)
-    
     if (
     x2 >= obj.x - obj.w/2 &&
     x1 <= obj.x + obj.w/2 &&
@@ -210,17 +243,8 @@ const gridW = 32
 let mouseCmdr = null
 let selectedUnits = []
 
-// Pathfinder
-// https://github.com/qiao/PathFinding.js/
-// Best First Search - chebyshev - allowdiag - nobordercross
-
 // Load maps here (Map matrix)
-let currentMap = new Graph([
-	[1, 0, 0, 0],
-	[1, 1, 0, 0],
-	[0, 1, 0, 0],
-    [1, 1, 0, 0],
-])
+let currentMap = createMap(30, 30)
 
 unitArray.push(new Unit(6*32-16, 3*32-16, 24, 0))
 unitArray.push(new Unit(432, 232, 24, 180))
@@ -237,13 +261,15 @@ unitArray.push(new Unit(100, 232, 16, 0))
 unitArray.push(new Unit(164, 200, 16, 0))
 unitArray.push(new Unit(164, 232, 16, 0))
 
+wallArray.push(new Wall(2,2))
+
 // ######################################### GAME LOOP ########################################
 function update() {
     requestAnimationFrame(update)
     ctx.clearRect(0, 0, canvas.width, canvas.height) //cls
 
     unitArray.forEach(item=> item.step())
-    //wallArray.forEach(item=> item.step())
+    wallArray.forEach(item=> item.draw())
     //buildArray.forEach(item=> item.step())
     mouseCmdr !== null && mouseCmdr.step()
 } update()
@@ -272,6 +298,7 @@ onkeydown = ({ key })=> { //e.code or e.key
     //console.log(selectedUnits)
     if (key == " ") {
         selectedUnits.forEach(item=> {
+            // Pathfinding for Airborne units
             item.waypoints = []
             item.waypoints.push({x: snapToGrid(mouseX), y: snapToGrid(mouseY)})
         })
@@ -289,14 +316,11 @@ onkeydown = ({ key })=> { //e.code or e.key
         selectedUnits.forEach(item=> {
             item.waypoints = []
             item.spd = 0
-            let path = astar.search(currentMap, currentMap.grid[0][0], currentMap.grid[3][0])
-            let parsedPath = path.map(item=> {
-                return {x: (item.x+1)*32-16, y: (item.y+1)*32-16}
-            })
-            //console.log(parsedPath)
-            console.log(currentMap.grid[3][0])
-            item.waypoints = parsedPath
-            
+            //item.waypoints = findPath({x: 0, y: 0}, {x: 0, y:10})
+            item.waypoints = findPath(
+                    {x: getGridCoor(item.x), y: getGridCoor(item.y)},
+                    {x: getGridCoor(mouseX), y: getGridCoor(mouseY)}
+            )
         })
     }
 }
